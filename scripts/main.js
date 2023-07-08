@@ -172,6 +172,14 @@ function saveArticle() {
     // let content = unicodeToUtf8(md_content.value);
     let blob = new Blob([md_content.value]);
     download_url.href = URL.createObjectURL(blob);
+    download_url.download = "new-article.md";
+    download_url.click();
+}
+
+function saveHtmlArticle() {
+    let blob = new Blob([art_main.innerHTML]);
+    download_url.href = URL.createObjectURL(blob);
+    download_url.download = "new-article-html.txt";
     download_url.click();
 }
 
@@ -213,7 +221,6 @@ md_content.oninput = updateMarkdownPreview;
 
 const ruby_exp = /\{([^\{\[\]\}]|\s)+\[([^\{\[\]\}]|\s)+\]\s*\}/;
 
-download_url.download = "new_article.md";
 art_upload.type = "file";
 art_upload.accept = ".md, .txt"
 art_upload.onchange = loadArticleFromChosenFile;
@@ -239,6 +246,15 @@ document.onkeydown = event => {
             event.preventDefault();
             loadArticle();
             break;
+        case 'Ctrl+Shift+KeyS':
+            event.preventDefault();
+            saveHtmlArticle();
+    }
+}
+
+document.oncontextmenu = event => {
+    if (event.target.id !== 'md_content') {
+        event.preventDefault();
     }
 }
 
