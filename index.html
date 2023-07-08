@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title id="title">RW式码字器</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes" />
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="icon" href="css/Riomon.svg" />
+</head>
+
+<body>
+    <!-- Fixed part -->
+    <!-- <p id="header">
+        <span id="head_text">欢迎使用...</span>
+    </p> -->
+    <p id="footer">
+        <span id="foot_text">RichadoWonosas 2023</span>
+        <noscript id="text_noscript">注意：请启用JavaScript或者更换能够使用JavaScript的浏览器。</noscript>
+    </p>
+    <div id="div_bg" class="no_padding no_shadow"></div>
+
+    <!-- Main page -->
+    <!-- <div id="header_pad" class="pad no_padding no_shadow"></div> -->
+
+    <div id="root_div">
+        <div class="line_container">
+            <div id="root_page">
+                <textarea id="md_content"></textarea>
+                <span id="word_count">字数：0</span>
+            </div>
+            <article id="art_main"></article>
+        </div>
+    </div>
+
+    <div id="footer_pad" class="pad no_padding no_shadow"></div>
+
+    <script src="scripts/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</body>
+
+</html>
