@@ -190,7 +190,6 @@ function finishLoadingArticle() {
 }
 
 function initialise() {
-    localStorage.removeItem("content");
     let t = localStorage.getItem("content");
     if (t === undefined)
         t = '';
