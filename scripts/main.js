@@ -22,22 +22,108 @@ function getCookie(name) {
     }
 }
 
-function setupRubyElement(raw_html) {
-    let match = ruby_exp.exec(raw_html);
-    while (match !== null) {
-        raw_html =
-            raw_html.substring(0, match.index) +
-            match[0]
-                .replace("{", "<ruby>")
-                .replace("}", "</ruby>")
-                .replaceAll("[", "<rt>")
-                .replaceAll("]", "</rt>") +
-            raw_html.substring(match.index + match[0].length);
+function setupRubyElement(text) {
+    let result = '', reg = ['', ''];
+    let status = 0;
 
-        match = ruby_exp.exec(raw_html);
+    if (typeof text !== 'string')
+        return result;
+    if (text.length === 0)
+        return result;
+
+    // run state machine
+    for (let i = 0; i < text.length; i++) {
+        switch (status) {
+            default:
+            case 0:
+                if (text[i] !== '{') {
+                    result += text[i];
+                } else {
+                    status = 1;
+                }
+                continue;
+            case 1:
+                switch (text[i]) {
+                    case '{':
+                        result += `{${reg[0]}`;
+                        continue;
+                    case '}':
+                    case ']':
+                        result += `{${reg[0]}${text[i]}`;
+                        status = 0;
+                        reg[0] = "";
+                        continue;
+                    case '[':
+                        status = 2;
+                        continue;
+                    default:
+                        reg[0] += text[i];
+                        continue;
+                }
+            case 2:
+                switch (text[i]) {
+                    case ']':
+                        status = 3;
+                        continue;
+                    case '{':
+                        result += `{${reg[0]}[${reg[1]}`;
+                        status = 1;
+                        reg[0] = "";
+                        reg[1] = "";
+                        continue;
+                    case '}':
+                    case '[':
+                        result += `{${reg[0]}[${reg[1]}${text[i]}`;
+                        status = 0;
+                        reg[0] = "";
+                        reg[1] = "";
+                        continue;
+                    default:
+                        reg[1] += text[i];
+                        continue;
+                }
+            case 3:
+                switch (text[i]) {
+                    case '}':
+                        result += `<ruby>${reg[0]}<rt>${reg[1]}</rt></ruby>`;
+                        status = 0;
+                        reg[0] = "";
+                        reg[1] = "";
+                        continue;
+                    case '{':
+                        result += `{${reg[0]}[${reg[1]}]`;
+                        status = 1;
+                        reg[0] = "";
+                        reg[1] = "";
+                        continue;
+                    default:
+                        result += `{${reg[0]}[${reg[1]}]${text[i]}`;
+                        status = 0;
+                        reg[0] = "";
+                        reg[1] = "";
+                    case ' ':
+                        continue;
+                }
+        }
     }
 
-    return raw_html;
+    // append unused contents
+    switch (status) {
+        default:
+        case 0:
+            break;
+        case 1:
+            result += `{${reg[0]}`;
+            break;
+        case 2:
+            result += `{${reg[0]}[${reg[1]}`;
+            break;
+        case 3:
+            result += `{${reg[0]}[${reg[1]}]`;
+            break;
+    }
+
+    return result;
 }
 
 function renderMarkdownData(text) {
@@ -47,6 +133,16 @@ function renderMarkdownData(text) {
 
 function setupMarkdownData(raw_html, container) {
     container.innerHTML = raw_html;
+}
+
+function updateMarkdownPreview() {
+    let t = md_content.value;
+
+    localStorage.setItem("content", t);
+
+    t = renderMarkdownData(t);
+    setupMarkdownData(t, art_main);
+    word_count.innerText = `字数：${countWord(t)}`;
 }
 
 function countWord(text) {
@@ -72,10 +168,35 @@ function countWord(text) {
     return result;
 }
 
-function initialise() {
-    let t = getCookie("content");
-    md_content.value = t === undefined ? '' : t;
+function saveArticle() {
+    // let content = unicodeToUtf8(md_content.value);
+    let blob = new Blob([md_content.value]);
+    download_url.href = URL.createObjectURL(blob);
+    download_url.click();
+}
 
+function loadArticle() {
+    art_upload.click();
+}
+
+function loadArticleFromChosenFile() {
+    reader.abort();
+    reader.readAsText(art_upload.files[0], "utf-8");
+}
+
+function finishLoadingArticle() {
+    md_content.value = reader.result;
+    updateMarkdownPreview();
+}
+
+function initialise() {
+    localStorage.removeItem("content");
+    let t = localStorage.getItem("content");
+    if (t === undefined)
+        t = '';
+
+    md_content.value = t;
+    updateMarkdownPreview();
 }
 
 // Initialisation
@@ -83,19 +204,43 @@ function initialise() {
 const art_main = document.getElementById("art_main");
 const md_content = document.getElementById("md_content");
 const word_count = document.getElementById("word_count");
+const download_url = document.createElement("a");
+const art_upload = document.createElement("input");
 
 const vacantDiv = document.createElement("div");
+const reader = new FileReader();
 
-md_content.oninput = () => {
-    let t = md_content.value;
+md_content.oninput = updateMarkdownPreview;
 
-    setCookie("content", t);
+const ruby_exp = /\{([^\{\[\]\}]|\s)+\[([^\{\[\]\}]|\s)+\]\s*\}/;
 
-    t = renderMarkdownData(t);
-    setupMarkdownData(t, art_main);
-    word_count.innerText = `字数：${countWord(t)}`;
+download_url.download = "new_article.md";
+art_upload.type = "file";
+art_upload.accept = ".md, .txt"
+art_upload.onchange = loadArticleFromChosenFile;
+reader.onloadend = finishLoadingArticle;
+
+document.onkeydown = event => {
+    if (event.isComposing || event.keyCode === 229) {
+        return;
+    }
+
+    let pressed = "";
+    pressed += event.ctrlKey ? "Ctrl+" : "";
+    pressed += event.altKey ? "Alt+" : "";
+    pressed += event.shiftKey ? "Shift+" : "";
+    pressed += event.code;
+
+    switch (pressed) {
+        case 'Ctrl+KeyS':
+            event.preventDefault();
+            saveArticle();
+            break;
+        case 'Ctrl+KeyL':
+            event.preventDefault();
+            loadArticle();
+            break;
+    }
 }
-
-const ruby_exp = /\{(([^\{\[\]\}]|\s)+\[([^\{\[\]\}]|\s)+\])+\}/;
 
 initialise();

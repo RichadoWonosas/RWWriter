@@ -160,7 +160,10 @@ div.line_container {
     display: flex;
     left: 0pt;
     bottom: 0pt;
-    margin: 6pt;
+    padding: 4pt;
+    margin: 2pt;
+    border-radius: 5pt;
+    background-color: #ffffffcc;
 }
 
 #root_div #root_page #filter_box {
@@ -235,6 +238,12 @@ div.line_container {
 #root_div article * {
     font-size: var(--font-size);
     text-align: left;
+    word-wrap: break-word;
+}
+
+#root_div article ruby,
+#root_div article rt {
+    text-align: center;
 }
 
 #root_div article p,
