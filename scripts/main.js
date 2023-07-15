@@ -198,6 +198,7 @@ function finishLoadingArticle() {
 }
 
 function initialise() {
+    marked.setOptions({ mangle: false, headerIds: false });
     let t = localStorage.getItem("content");
     if (t === undefined)
         t = '';
