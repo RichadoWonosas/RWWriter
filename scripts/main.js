@@ -236,7 +236,7 @@ const initialise = () => {
     md_content.value = t;
     updateMarkdownPreview();
 
-    localizeHelper.importTranslation("../resources/localized-strings.json");
+    localizeHelper.importTranslation("./../resources/localized-strings.json");
     localizeHelper.registerLocaleChangeCallback("title", (str) => document.title = str);
     localizeHelper.registerLocaleChangeCallback("wordcount", (str) => {
         renderWordCount = (count) => word_count.innerText = `${str}${count}`;
