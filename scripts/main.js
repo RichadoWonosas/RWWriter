@@ -213,6 +213,17 @@ const saveHtmlArticle = () => {
     download_url.click();
 }
 
+const getJsonData = (path) => {
+    let prom = fetch(path).then(
+        (response) =>
+            response.status === 200 ?
+                response.json() :
+                {}
+    );
+
+    return prom;
+};
+
 const loadArticle = () => {
     art_upload.click();
 }
@@ -236,7 +247,9 @@ const initialise = () => {
     md_content.value = t;
     updateMarkdownPreview();
 
-    localizeHelper.importTranslation("/../resources/localized-strings.json");
+    getJsonData("/../resources/localized-strings.json").then(
+        (data) => localizeHelper.importTranslation(data)
+    )
     localizeHelper.registerLocaleChangeCallback("title", (str) => document.title = str);
     localizeHelper.registerLocaleChangeCallback("wordcount", (str) => {
         renderWordCount = (count) => word_count.innerText = `${str}${count}`;
