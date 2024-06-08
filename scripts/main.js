@@ -1,28 +1,13 @@
 "use-strict";
 
+import { drawer, config } from "https://richadowonosas.github.io/scripts/drawer.js";
+import { localizeHelper } from "https://richadowonosas.github.io/scripts/localize.js";
+
 // Functions
 
-function setCookie(name, content, expire_time = 1e8) {
-    document.cookie =
-        name + '=' + content.toString() + '; ' +
-        'max-age=' + expire_time.toString();
-}
+let renderWordCount = (count) => word_count.innerText = `字数：${count}`;
 
-function getCookie(name) {
-    let cookies = document.cookie.split('; ');
-    for (let i = 0; i < cookies.length; i++) {
-        let contents = cookies[i].split('=', 2);
-        if (contents[0] === name) {
-            if (contents.length > 1) {
-                return contents[1];
-            } else {
-                return '';
-            }
-        }
-    }
-}
-
-function setupRubyElement(text) {
+const setupRubyElement = (text) => {
     let result = '', reg = [[], []], tmp = '';
     let status = 0;
 
@@ -171,26 +156,26 @@ function setupRubyElement(text) {
     return result;
 }
 
-function renderMarkdownData(text) {
+const renderMarkdownData = (text) => {
     let t = marked.parse(text);
     return setupRubyElement(t);
 }
 
-function setupMarkdownData(raw_html, container) {
+const setupMarkdownData = (raw_html, container) => {
     container.innerHTML = raw_html;
 }
 
-function updateMarkdownPreview() {
+const updateMarkdownPreview = () => {
     let t = md_content.value;
 
     localStorage.setItem("content", t);
 
     t = renderMarkdownData(t);
     setupMarkdownData(t, art_main);
-    word_count.innerText = `字数：${countWord(t)}`;
+    renderWordCount(countWord(t));
 }
 
-function countWord(text) {
+const countWord = (text) => {
     // get pure content
     vacantDiv.innerHTML = text;
     let t = vacantDiv.textContent;
@@ -213,7 +198,7 @@ function countWord(text) {
     return result;
 }
 
-function saveArticle() {
+const saveArticle = () => {
     // let content = unicodeToUtf8(md_content.value);
     let blob = new Blob([md_content.value]);
     download_url.href = URL.createObjectURL(blob);
@@ -221,28 +206,28 @@ function saveArticle() {
     download_url.click();
 }
 
-function saveHtmlArticle() {
+const saveHtmlArticle = () => {
     let blob = new Blob([art_main.innerHTML]);
     download_url.href = URL.createObjectURL(blob);
     download_url.download = "new-article-html.txt";
     download_url.click();
 }
 
-function loadArticle() {
+const loadArticle = () => {
     art_upload.click();
 }
 
-function loadArticleFromChosenFile() {
+const loadArticleFromChosenFile = () => {
     reader.abort();
     reader.readAsText(art_upload.files[0], "utf-8");
 }
 
-function finishLoadingArticle() {
+const finishLoadingArticle = () => {
     md_content.value = reader.result;
     updateMarkdownPreview();
 }
 
-function initialise() {
+const initialise = () => {
     marked.setOptions({ mangle: false, headerIds: false });
     let t = localStorage.getItem("content");
     if (t === undefined)
@@ -250,10 +235,37 @@ function initialise() {
 
     md_content.value = t;
     updateMarkdownPreview();
+
+    localizeHelper.importTranslation("../resources/localized-strings.json");
+    localizeHelper.registerLocaleChangeCallback("title", (str) => document.title = str);
+    localizeHelper.registerLocaleChangeCallback("wordcount", (str) => {
+        renderWordCount = (count) => word_count.innerText = `${str}${count}`;
+        updateMarkdownPreview();
+    });
+    config.registerFontSizeChangedCallback((size) => {
+        if (size == 'small') {
+            root_div.classList.add('small');
+        } else {
+            root_div.classList.remove('small');
+        }
+        if (size == 'medium') {
+            root_div.classList.add('medium');
+        } else {
+            root_div.classList.remove('medium');
+        }
+        if (size == 'large') {
+            root_div.classList.add('large');
+        } else {
+            root_div.classList.remove('large');
+        }
+    });
+    config.loadGlobalConfig();
+    drawer.appendToDocument();
 }
 
 // Initialisation
 
+const root_div = document.getElementById("root_div");
 const art_main = document.getElementById("art_main");
 const md_content = document.getElementById("md_content");
 const word_count = document.getElementById("word_count");
@@ -272,7 +284,7 @@ art_upload.accept = ".md, .txt"
 art_upload.onchange = loadArticleFromChosenFile;
 reader.onloadend = finishLoadingArticle;
 
-document.onkeydown = event => {
+document.onkeydown = (event) => {
     if (event.isComposing || event.keyCode === 229) {
         return;
     }
@@ -298,7 +310,7 @@ document.onkeydown = event => {
     }
 }
 
-document.oncontextmenu = event => {
+document.oncontextmenu = (event) => {
     if (event.target.id !== 'md_content') {
         event.preventDefault();
     }

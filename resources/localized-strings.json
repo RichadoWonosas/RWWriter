@@ -1,0 +1,16 @@
+{
+    "title": {
+        "en-US": "RW's Writer",
+        "zh-CN": "RW式码字器",
+        "zh-TW": "RW式碼字器",
+        "lzh-CN": "南理茶渡製幻筆",
+        "ja-JP": "RW式ライター"
+    },
+    "wordcount": {
+        "en-US": "Words: ",
+        "zh-CN": "字数：",
+        "zh-TW": "字數：",
+        "lzh-CN": "字數：",
+        "ja-JP": "文字数："
+    }
+}
