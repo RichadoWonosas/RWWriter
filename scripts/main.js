@@ -198,6 +198,49 @@ const countWord = (text) => {
     return result;
 }
 
+const renderNumberForLiteralChinese = (number) => {
+    const NUMBERS = "〇一二三四五六七八九";
+    const SMALL_DIGITS = "個十百千";
+    const LARGE_DIGITS = "萬億兆京垓秭穰溝澗正载";
+    let result = "";
+    let flag = "";
+
+    if (number == 0)
+        return "〇";
+    if (number < 0) {
+        flag = "负";
+        number = -number;
+    }
+
+    let i = 0;
+    while (number > 0) {
+        let rem = number % 10;
+        number = (number - rem) / 10;
+        if (i == 0) {
+            if (rem > 0)
+                result += NUMBERS[rem];
+        } else {
+            if ((i & 3) == 0) {
+                let d = i >>> 2, j = 0;
+                while ((d & 1) == 0) {
+                    d >>>= 1;
+                    j++;
+                }
+                result += LARGE_DIGITS[j];
+            } else {
+                if (rem > 0)
+                    result += SMALL_DIGITS[i & 3];
+            }
+            if (rem > 0)
+                result += NUMBERS[rem];
+        }
+        i++;
+    }
+    result += flag;
+
+    return result.split("").reverse().join("");
+};
+
 const saveArticle = () => {
     // let content = unicodeToUtf8(md_content.value);
     let blob = new Blob([md_content.value]);
@@ -212,17 +255,6 @@ const saveHtmlArticle = () => {
     download_url.download = "new-article-html.txt";
     download_url.click();
 }
-
-const getJsonData = (path) => {
-    let prom = fetch(path).then(
-        (response) =>
-            response.status === 200 ?
-                response.json() :
-                {}
-    );
-
-    return prom;
-};
 
 const loadArticle = () => {
     art_upload.click();
@@ -250,7 +282,9 @@ const initialise = () => {
     localizeHelper.importTranslation(document.URL + "resources/localized-strings.json");
     localizeHelper.registerLocaleChangeCallback("title", (str) => document.title = str);
     localizeHelper.registerLocaleChangeCallback("wordcount", (str) => {
-        renderWordCount = (count) => word_count.innerText = `${str}${count}`;
+        renderWordCount = (str != "計") ?
+            ((count) => word_count.innerText = `${str}${count}`) :
+            ((count) => word_count.innerText = `計${renderNumberForLiteralChinese(count)}言`);
         updateMarkdownPreview();
     });
     config.registerFontSizeChangedCallback((size) => {

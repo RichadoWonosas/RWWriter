@@ -80,7 +80,7 @@ div.line_container {
 
 #root_div article ruby,
 #root_div article rt {
-    text-align: center;
+    text-align: start;
 }
 
 #root_div article p,
