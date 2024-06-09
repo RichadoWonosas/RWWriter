@@ -1,5 +1,17 @@
 @charset "UTF-8";
 
+#oper_import {
+    background-image: var(--icon-upload);
+}
+
+#oper_save {
+    background-image: var(--icon-download);
+}
+
+#oper_export {
+    background-image: var(--icon-export);
+}
+
 div.line_container {
     background-color: transparent;
     display: flex;

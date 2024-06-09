@@ -270,6 +270,29 @@ const finishLoadingArticle = () => {
     updateMarkdownPreview();
 }
 
+const buildDrawer = () => {
+    let operFrame = drawer.createDrawerContentFrame("oper", "操作");
+    {
+        let loadContent = operFrame.createContent("import", "导入");
+        loadContent.classList.add("button");
+        loadContent.onclick = () => loadArticle();
+        operFrame.addContent(loadContent);
+    }
+    {
+        let saveContent = operFrame.createContent("save", "保存");
+        saveContent.classList.add("button");
+        saveContent.onclick = () => saveArticle();
+        operFrame.addContent(saveContent);
+    }
+    {
+        let expContent = operFrame.createContent("export", "导出");
+        expContent.classList.add("button");
+        expContent.onclick = () => saveArticle();
+        operFrame.addContent(expContent);
+    }
+    drawer.addDrawerContentByFrame(operFrame);
+};
+
 const initialise = () => {
     marked.setOptions({ mangle: false, headerIds: false });
     let t = localStorage.getItem("content");
@@ -304,6 +327,8 @@ const initialise = () => {
             root_div.classList.remove('large');
         }
     });
+    buildDrawer();
+
     config.loadGlobalConfig();
     drawer.appendToDocument();
 }

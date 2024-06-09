@@ -12,5 +12,33 @@
         "zh-TW": "字數：",
         "lzh-CN": "計",
         "ja-JP": "文字数："
+    },
+    "text_oper": {
+        "en-US": "Operations",
+        "zh-CN": "操作",
+        "zh-TW": "操作",
+        "lzh-CN": "功用",
+        "ja-JP": "操作"
+    },
+    "text_oper_import": {
+        "en-US": "Import Markdown File",
+        "zh-CN": "导入Markdown文件",
+        "zh-TW": "載入Markdown文件",
+        "lzh-CN": "載下標案卷",
+        "ja-JP": "Markdownファイルを導入する"
+    },
+    "text_oper_save": {
+        "en-US": "Save as Markdown File",
+        "zh-CN": "存储为Markdown文件",
+        "zh-TW": "存儲為Markdown文件",
+        "lzh-CN": "存下標案卷",
+        "ja-JP": "Markdownファイルで保存する"
+    },
+    "text_oper_export": {
+        "en-US": "Export as HTML File",
+        "zh-CN": "导出为HTML文件",
+        "zh-TW": "導出為HTML文件",
+        "lzh-CN": "轉存超文本標記案卷",
+        "ja-JP": "HTMLファイルで導出する"
     }
 }
