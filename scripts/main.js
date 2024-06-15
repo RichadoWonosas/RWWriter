@@ -154,16 +154,16 @@ const setupRubyElement = (text) => {
     }
 
     return result;
-}
+};
 
 const renderMarkdownData = (text) => {
     let t = marked.parse(text);
     return setupRubyElement(t);
-}
+};
 
 const setupMarkdownData = (raw_html, container) => {
     container.innerHTML = raw_html;
-}
+};
 
 const updateMarkdownPreview = () => {
     let t = md_content.value;
@@ -173,7 +173,7 @@ const updateMarkdownPreview = () => {
     t = renderMarkdownData(t);
     setupMarkdownData(t, art_main);
     renderWordCount(countWord(t));
-}
+};
 
 const countWord = (text) => {
     // get pure content
@@ -196,7 +196,7 @@ const countWord = (text) => {
         }
     )
     return result;
-}
+};
 
 const renderNumberForLiteralChinese = (number) => {
     const NUMBERS = "〇一二三四五六七八九";
@@ -247,28 +247,28 @@ const saveArticle = () => {
     download_url.href = URL.createObjectURL(blob);
     download_url.download = "new-article.md";
     download_url.click();
-}
+};
 
 const saveHtmlArticle = () => {
     let blob = new Blob([art_main.innerHTML]);
     download_url.href = URL.createObjectURL(blob);
     download_url.download = "new-article-html.txt";
     download_url.click();
-}
+};
 
 const loadArticle = () => {
     art_upload.click();
-}
+};
 
 const loadArticleFromChosenFile = () => {
     reader.abort();
     reader.readAsText(art_upload.files[0], "utf-8");
-}
+};
 
 const finishLoadingArticle = () => {
     md_content.value = reader.result;
     updateMarkdownPreview();
-}
+};
 
 const buildDrawer = () => {
     let operFrame = drawer.createDrawerContentFrame("oper", "操作");
@@ -331,7 +331,7 @@ const initialise = () => {
 
     config.loadGlobalConfig();
     drawer.appendToDocument();
-}
+};
 
 // Initialisation
 
@@ -378,12 +378,12 @@ document.onkeydown = (event) => {
             event.preventDefault();
             saveHtmlArticle();
     }
-}
+};
 
 document.oncontextmenu = (event) => {
     if (event.target.id !== 'md_content') {
         event.preventDefault();
     }
-}
+};
 
 initialise();
