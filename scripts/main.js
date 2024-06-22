@@ -306,7 +306,7 @@ const initialise = () => {
         let legacy = localStorage.getItem("content");
         if (legacy !== null) {
             localStorage.setItem("writer_content", legacy);
-            localStorage.deleteItem("content");
+            localStorage.removeItem("content");
         }
     }
     marked.setOptions({mangle: false, headerIds: false});
