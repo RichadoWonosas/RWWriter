@@ -1,4 +1,4 @@
-"use-strict";
+"use strict";
 
 import { drawer, config } from "https://richadowonosas.github.io/scripts/drawer.js";
 import { localizeHelper } from "https://richadowonosas.github.io/scripts/localize.js";
@@ -195,6 +195,7 @@ const countWord = (text) => {
             }
         }
     )
+    vacantDiv.innerHTML = "";
     return result;
 };
 
@@ -346,8 +347,6 @@ const vacantDiv = document.createElement("div");
 const reader = new FileReader();
 
 md_content.oninput = updateMarkdownPreview;
-
-const ruby_exp = /\{([^\{\[\]\}]|\s)+\[([^\{\[\]\}]|\s)+\]\s*\}/;
 
 art_upload.type = "file";
 art_upload.accept = ".md, .txt"
