@@ -1,7 +1,6 @@
 "use strict";
 
-import { drawer, config } from "https://richadowonosas.github.io/scripts/drawer.js";
-import { localizeHelper } from "https://richadowonosas.github.io/scripts/localize.js";
+import {helper} from "https://richadowonosas.github.io/scripts/helper.js";
 
 // Functions
 
@@ -26,14 +25,14 @@ const setupRubyElement = (text) => {
                 } else {
                     status = 1;
                 }
-                continue;
+                break;
             case 1:
                 switch (text[i]) {
                     case '{':
                         reg[0].push(tmp);
                         tmp = "";
                         result += `{${reg[0].join('-')}`;
-                        continue;
+                        break;
                     case '}':
                     case ']':
                         reg[0].push(tmp);
@@ -41,33 +40,36 @@ const setupRubyElement = (text) => {
                         result += `{${reg[0].join('-')}${text[i]}`;
                         status = 0;
                         reg[0] = [];
-                        continue;
+                        break;
                     case '[':
                         reg[0].push(tmp);
                         tmp = "";
                         status = 2;
-                        continue;
+                        break;
                     case '-':
                         reg[0].push(tmp);
                         tmp = "";
-                        continue;
+                        break;
                     case '\\':
                         i++;
                         if (i >= text.length) {
                             tmp += '\\';
                             break;
                         }
+                        tmp += text[i];
+                        break;
                     default:
                         tmp += text[i];
-                        continue;
+                        break;
                 }
+                break;
             case 2:
                 switch (text[i]) {
                     case ']':
                         reg[1].push(tmp);
                         tmp = "";
                         status = 3;
-                        continue;
+                        break;
                     case '{':
                         reg[1].push(tmp);
                         tmp = "";
@@ -75,7 +77,7 @@ const setupRubyElement = (text) => {
                         status = 1;
                         reg[0] = [];
                         reg[1] = [];
-                        continue;
+                        break;
                     case '}':
                     case '[':
                         reg[1].push(tmp);
@@ -84,21 +86,24 @@ const setupRubyElement = (text) => {
                         status = 0;
                         reg[0] = [];
                         reg[1] = [];
-                        continue;
+                        break;
                     case '-':
                         reg[1].push(tmp);
                         tmp = "";
-                        continue;
+                        break;
                     case '\\':
                         i++;
                         if (i >= text.length) {
                             tmp += '\\';
                             break;
                         }
+                        tmp += text[i];
+                        break;
                     default:
                         tmp += text[i];
-                        continue;
+                        break;
                 }
+                break;
             case 3:
                 switch (text[i]) {
                     case '}':
@@ -115,20 +120,21 @@ const setupRubyElement = (text) => {
                         status = 0;
                         reg[0] = [];
                         reg[1] = [];
-                        continue;
+                        break;
                     case '{':
                         result += `{${reg[0].join('-')}[${reg[1].join('-')}]`;
                         status = 1;
                         reg[0] = [];
                         reg[1] = [];
-                        continue;
+                        break;
+                    case ' ':
+                        break;
                     default:
                         result += `{${reg[0].join('-')}[${reg[1].join('-')}]${text[i]}`;
                         status = 0;
                         reg[0] = [];
                         reg[1] = [];
-                    case ' ':
-                        continue;
+                        break;
                 }
         }
     }
@@ -168,7 +174,7 @@ const setupMarkdownData = (raw_html, container) => {
 const updateMarkdownPreview = () => {
     let t = md_content.value;
 
-    localStorage.setItem("content", t);
+    localStorage.setItem("writer_content", t);
 
     t = renderMarkdownData(t);
     setupMarkdownData(t, art_main);
@@ -206,7 +212,7 @@ const renderNumberForLiteralChinese = (number) => {
     let result = "";
     let flag = "";
 
-    if (number == 0)
+    if (number === 0)
         return "〇";
     if (number < 0) {
         flag = "负";
@@ -217,13 +223,13 @@ const renderNumberForLiteralChinese = (number) => {
     while (number > 0) {
         let rem = number % 10;
         number = (number - rem) / 10;
-        if (i == 0) {
+        if (i === 0) {
             if (rem > 0)
                 result += NUMBERS[rem];
         } else {
-            if ((i & 3) == 0) {
+            if ((i & 3) === 0) {
                 let d = i >>> 2, j = 0;
-                while ((d & 1) == 0) {
+                while ((d & 1) === 0) {
                     d >>>= 1;
                     j++;
                 }
@@ -272,7 +278,7 @@ const finishLoadingArticle = () => {
 };
 
 const buildDrawer = () => {
-    let operFrame = drawer.createDrawerContentFrame("oper", "操作");
+    let operFrame = helper.drawer.createDrawerContentFrame("oper", "操作");
     {
         let loadContent = operFrame.createContent("import", "导入");
         loadContent.classList.add("button");
@@ -291,38 +297,46 @@ const buildDrawer = () => {
         expContent.onclick = () => saveArticle();
         operFrame.addContent(expContent);
     }
-    drawer.addDrawerContentByFrame(operFrame);
+    helper.drawer.addDrawerContentByFrame(operFrame);
 };
 
 const initialise = () => {
-    marked.setOptions({ mangle: false, headerIds: false });
-    let t = localStorage.getItem("content");
+    // update from old version
+    {
+        let legacy = localStorage.getItem("content");
+        if (legacy !== null) {
+            localStorage.setItem("writer_content", legacy);
+            localStorage.deleteItem("content");
+        }
+    }
+    marked.setOptions({mangle: false, headerIds: false});
+    let t = localStorage.getItem("writer_content");
     if (t === undefined)
         t = '';
 
     md_content.value = t;
     updateMarkdownPreview();
 
-    localizeHelper.importTranslation(document.URL + "resources/localized-strings.json");
-    localizeHelper.registerLocaleChangeCallback("title", (str) => document.title = str);
-    localizeHelper.registerLocaleChangeCallback("wordcount", (str) => {
-        renderWordCount = (str != "計") ?
-            ((count) => word_count.innerText = `${str}${count}`) :
+    helper.importTranslation(document.URL.split("/").slice(0, -1).join("/") + "/resources/localized-strings.json");
+    helper.addEventListener("locale", "title", (res) => document.title = res.str);
+    helper.addEventListener("locale", "wordcount", (res) => {
+        renderWordCount = (res.str !== "計") ?
+            ((count) => word_count.innerText = `${res.str}${count}`) :
             ((count) => word_count.innerText = `計${renderNumberForLiteralChinese(count)}言`);
         updateMarkdownPreview();
     });
-    config.registerFontSizeChangedCallback((size) => {
-        if (size == 'small') {
+    helper.addEventListener("size", "root", (res) => {
+        if (res.size === 'small') {
             root_div.classList.add('small');
         } else {
             root_div.classList.remove('small');
         }
-        if (size == 'medium') {
+        if (res.size === 'medium') {
             root_div.classList.add('medium');
         } else {
             root_div.classList.remove('medium');
         }
-        if (size == 'large') {
+        if (res.size === 'large') {
             root_div.classList.add('large');
         } else {
             root_div.classList.remove('large');
@@ -330,8 +344,8 @@ const initialise = () => {
     });
     buildDrawer();
 
-    config.loadGlobalConfig();
-    drawer.appendToDocument();
+    helper.loadGlobalConfig();
+    helper.drawer.appendToDocument();
 };
 
 // Initialisation
