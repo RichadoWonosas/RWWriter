@@ -1,6 +1,19 @@
 "use strict";
 
-import {helper} from "https://richadowonosas.github.io/scripts/helper.js";
+import {helper} from "/scripts/helper.js";
+import {marked} from "./tps/marked.esm.js";
+
+// Constants
+
+const root_div = document.getElementById("root_div");
+const art_main = document.getElementById("art_main");
+const md_content = document.getElementById("md_content");
+const word_count = document.getElementById("word_count");
+const download_url = document.createElement("a");
+const art_upload = document.createElement("input");
+
+const vacantDiv = document.createElement("div");
+const reader = new FileReader();
 
 // Functions
 
@@ -277,6 +290,95 @@ const finishLoadingArticle = () => {
     updateMarkdownPreview();
 };
 
+const initMarked = () => {
+    marked.setOptions({mangle: false, headerIds: false});
+    // update from old version
+    {
+        let legacy = localStorage.getItem("content");
+        if (legacy !== null) {
+            localStorage.setItem("writer_content", legacy);
+            localStorage.removeItem("content");
+        }
+    }
+    let t = localStorage.getItem("writer_content");
+    if (t === undefined)
+        t = '';
+    md_content.value = t;
+    updateMarkdownPreview();
+};
+
+const initLocale = () => {
+    helper.importTranslation(window.location.pathname.split("/").slice(0, -1).join("/") + "/resources/localized-strings.json");
+    helper.addEventListener("locale", "title", (res) => document.title = res.str);
+    helper.addEventListener("locale", "wordcount", (res) => {
+        renderWordCount = (res.str !== "計") ?
+            ((count) => word_count.innerText = `${res.str}${count}`) :
+            ((count) => word_count.innerText = `計${renderNumberForLiteralChinese(count)}言`);
+        updateMarkdownPreview();
+    });
+};
+
+const initSettings = () => {
+    helper.addEventListener("size", "root", (res) => {
+        if (res.size === 'small') {
+            root_div.classList.add('small');
+        } else {
+            root_div.classList.remove('small');
+        }
+        if (res.size === 'medium') {
+            root_div.classList.add('medium');
+        } else {
+            root_div.classList.remove('medium');
+        }
+        if (res.size === 'large') {
+            root_div.classList.add('large');
+        } else {
+            root_div.classList.remove('large');
+        }
+    });
+};
+
+const initElements = () => {
+    md_content.oninput = updateMarkdownPreview;
+
+    art_upload.type = "file";
+    art_upload.accept = ".md, .txt"
+    art_upload.onchange = loadArticleFromChosenFile;
+    reader.onloadend = finishLoadingArticle;
+
+    document.onkeydown = (event) => {
+        if (event.isComposing || event.keyCode === 229) {
+            return;
+        }
+
+        let pressed = "";
+        pressed += event.ctrlKey ? "Ctrl+" : "";
+        pressed += event.altKey ? "Alt+" : "";
+        pressed += event.shiftKey ? "Shift+" : "";
+        pressed += event.code;
+
+        switch (pressed) {
+            case 'Ctrl+KeyS':
+                event.preventDefault();
+                saveArticle();
+                break;
+            case 'Ctrl+KeyL':
+                event.preventDefault();
+                loadArticle();
+                break;
+            case 'Ctrl+Shift+KeyS':
+                event.preventDefault();
+                saveHtmlArticle();
+        }
+    };
+
+    document.oncontextmenu = (event) => {
+        if (event.target.id !== 'md_content') {
+            event.preventDefault();
+        }
+    };
+};
+
 const buildDrawer = () => {
     let operFrame = helper.drawer.createDrawerContentFrame("oper", "操作");
     {
@@ -301,47 +403,10 @@ const buildDrawer = () => {
 };
 
 const initialise = () => {
-    // update from old version
-    {
-        let legacy = localStorage.getItem("content");
-        if (legacy !== null) {
-            localStorage.setItem("writer_content", legacy);
-            localStorage.removeItem("content");
-        }
-    }
-    marked.setOptions({mangle: false, headerIds: false});
-    let t = localStorage.getItem("writer_content");
-    if (t === undefined)
-        t = '';
-
-    md_content.value = t;
-    updateMarkdownPreview();
-
-    helper.importTranslation(document.URL.split("/").slice(0, -1).join("/") + "/resources/localized-strings.json");
-    helper.addEventListener("locale", "title", (res) => document.title = res.str);
-    helper.addEventListener("locale", "wordcount", (res) => {
-        renderWordCount = (res.str !== "計") ?
-            ((count) => word_count.innerText = `${res.str}${count}`) :
-            ((count) => word_count.innerText = `計${renderNumberForLiteralChinese(count)}言`);
-        updateMarkdownPreview();
-    });
-    helper.addEventListener("size", "root", (res) => {
-        if (res.size === 'small') {
-            root_div.classList.add('small');
-        } else {
-            root_div.classList.remove('small');
-        }
-        if (res.size === 'medium') {
-            root_div.classList.add('medium');
-        } else {
-            root_div.classList.remove('medium');
-        }
-        if (res.size === 'large') {
-            root_div.classList.add('large');
-        } else {
-            root_div.classList.remove('large');
-        }
-    });
+    initMarked();
+    initElements();
+    initSettings();
+    initLocale();
     buildDrawer();
 
     helper.loadGlobalConfig();
@@ -349,54 +414,4 @@ const initialise = () => {
 };
 
 // Initialisation
-
-const root_div = document.getElementById("root_div");
-const art_main = document.getElementById("art_main");
-const md_content = document.getElementById("md_content");
-const word_count = document.getElementById("word_count");
-const download_url = document.createElement("a");
-const art_upload = document.createElement("input");
-
-const vacantDiv = document.createElement("div");
-const reader = new FileReader();
-
-md_content.oninput = updateMarkdownPreview;
-
-art_upload.type = "file";
-art_upload.accept = ".md, .txt"
-art_upload.onchange = loadArticleFromChosenFile;
-reader.onloadend = finishLoadingArticle;
-
-document.onkeydown = (event) => {
-    if (event.isComposing || event.keyCode === 229) {
-        return;
-    }
-
-    let pressed = "";
-    pressed += event.ctrlKey ? "Ctrl+" : "";
-    pressed += event.altKey ? "Alt+" : "";
-    pressed += event.shiftKey ? "Shift+" : "";
-    pressed += event.code;
-
-    switch (pressed) {
-        case 'Ctrl+KeyS':
-            event.preventDefault();
-            saveArticle();
-            break;
-        case 'Ctrl+KeyL':
-            event.preventDefault();
-            loadArticle();
-            break;
-        case 'Ctrl+Shift+KeyS':
-            event.preventDefault();
-            saveHtmlArticle();
-    }
-};
-
-document.oncontextmenu = (event) => {
-    if (event.target.id !== 'md_content') {
-        event.preventDefault();
-    }
-};
-
 initialise();
