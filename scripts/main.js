@@ -48,6 +48,8 @@ const setupRubyElement = (text) => {
                         break;
                     case '}':
                     case ']':
+                    case '\n':
+                    case '\r':
                         reg[0].push(tmp);
                         tmp = "";
                         result += `{${reg[0].join('-')}${text[i]}`;
@@ -93,6 +95,8 @@ const setupRubyElement = (text) => {
                         break;
                     case '}':
                     case '[':
+                    case '\n':
+                    case '\r':
                         reg[1].push(tmp);
                         tmp = "";
                         result += `{${reg[0].join('-')}[${reg[1].join('-')}${text[i]}`;
